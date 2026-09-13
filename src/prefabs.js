@@ -1,0 +1,5 @@
+import {clone,newMap,uid,validate} from './map.js';
+export function translateObjects(objects,dx,dy){for(const o of objects){o.x+=dx;o.y+=dy;if(o.destination){o.destination.x+=dx;o.destination.y+=dy;}for(const p of o.motion.path){p.x+=dx;p.y+=dy;}}return objects;}
+export function savePrefab(name,objects){if(!name.trim()||name.length>80)throw Error('Enter a shape name (up to 80 characters).');if(!objects.length)throw Error('Select one or more shapes first.');const copy=clone(objects);const x=copy.reduce((s,o)=>s+o.x,0)/copy.length,y=copy.reduce((s,o)=>s+o.y,0)/copy.length;const prefab={version:1,id:uid(),name:name.trim(),objects:translateObjects(copy,-x,-y)};return validatePrefab(prefab);}
+export function validatePrefab(p){if(!p||p.version!==1||typeof p.id!=='string'||typeof p.name!=='string'||!p.name.trim()||p.name.length>80||!Array.isArray(p.objects)||!p.objects.length)throw Error('Invalid saved shape.');validate({...newMap(),objects:p.objects},{prefab:true});return p;}
+export function placePrefab(prefab,x,y){validatePrefab(prefab);const objects=translateObjects(clone(prefab.objects),x,y);objects.forEach(o=>o.id=uid());return objects;}
